@@ -175,7 +175,7 @@ function newGame() {
 
 function endGame() {
     input.value = "";
-    if (hint.join("") === wordToFind) {
+    if (hint.join("").toLowerCase() === wordToFind) {
         result.textContent = "Gagné !";
         result.style.color = "green";
         score++;

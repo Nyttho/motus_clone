@@ -75,10 +75,8 @@ export function compareWords(wordToFind, row, hint) {
 export function checkWin(word, userWord) {
     const result = document.querySelector(".result");
     let gameOver;
-    if (word === userWord) {
+    if (word === userWord.toLowerCase()) {
         gameOver = true;
-        result.textContent = "Gagné !";
-        result.style.color = "green";
     }
     return gameOver;
 }
