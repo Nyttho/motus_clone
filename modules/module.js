@@ -47,7 +47,7 @@ export function updateRow(word, row, userWord, hint) {
         const rows = document.querySelectorAll(".row");
         const span = rows[row].querySelectorAll("span");
 
-        userWord = [...userWord];
+        userWord = [...userWord.toLowerCase()];
         for (let i = 0; i < userWord.length; i++) {
             span[i].textContent = userWord[i]
         }
