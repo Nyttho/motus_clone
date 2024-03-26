@@ -43,37 +43,49 @@ async function fetchWord(url) {
 async function handleKeyDown(e) {
     errorMsg.textContent = "";
     const userAnswer = input.value;
-    if (e.key === "Enter") {
-        let UserWordExists = await searchWordOnLarousse(userAnswer);
-        if (UserWordExists) {
-            if (!gameOver) {
-                if (rowNb < 5) {
-                    if (userAnswer.length === wordToFind.length) {
-                        updateRow(wordToFind, rowNb, userAnswer, hint);
-                        rowNb++;
-                        // Vérifie si le joueur a gagné après avoir mis à jour la ligne
-                        gameOver = checkWin(wordToFind, userAnswer);
-                        if (gameOver) {
-                            endGame();
-                            return; // Arrête la fonction ici pour ne pas exécuter les actions suivantes
-                        }
-                        showHint(wordToFind, rowNb, hint);
-                    } else {
-                        rowNb++;
-                        showHint(wordToFind, rowNb, hint);
-                    }
-                    input.value = "";
-                } else {
-                    gameOver = true;
-                    endGame();
-                }
-            }
-        } else {
-            errorMsg.textContent = "Ce mot n'existe pas dans le dictionnaire";
-        }
 
+    if (e.key !== "Enter") return;
+
+    const userWordExists = await searchWordOnLarousse(userAnswer);
+
+    if (!userWordExists) {
+        input.value = "";
+        errorMsg.textContent = "Ce mot n'existe pas dans le dictionnaire";
+        return;
     }
+
+    if (gameOver || rowNb > 5) {
+        gameOver = true;
+        endGame();
+        return;
+    }
+
+    if (userAnswer.length !== wordToFind.length) {
+        errorMsg.textContent = "Veuillez taper un mot de " + wordToFind.length + " lettres"
+        return;
+    }
+
+    updateRow(wordToFind, rowNb, userAnswer, hint);
+    if (rowNb < 5) {
+        rowNb++;
+    } else {
+        gameOver = true;
+        endGame();
+        return;
+    }
+
+    gameOver = checkWin(wordToFind, userAnswer);
+    if (gameOver) {
+        endGame();
+        return;
+    }
+
+    showHint(wordToFind, rowNb, hint);
+
+    input.value = "";
 }
+
+
 
 async function newGame() {
 
