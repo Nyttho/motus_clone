@@ -54,12 +54,6 @@ async function handleKeyDown(e) {
         return;
     }
 
-    if (gameOver || rowNb > 5) {
-        gameOver = true;
-        endGame();
-        return;
-    }
-
     if (userAnswer.length !== wordToFind.length) {
         errorMsg.textContent = "Veuillez taper un mot de " + wordToFind.length + " lettres"
         return;
