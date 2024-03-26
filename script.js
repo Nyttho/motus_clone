@@ -54,7 +54,6 @@ const wordList = [
     "chocolat",
     "sandwich",
     "abeille",
-    "arc-en-ciel",
     "ciseaux",
     "cerveau",
     "pomme",
