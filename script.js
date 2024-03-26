@@ -37,9 +37,6 @@ async function fetchWord(url) {
     }
 }
 
-
-
-
 async function handleKeyDown(e) {
     errorMsg.textContent = "";
     const userAnswer = input.value;
@@ -78,8 +75,6 @@ async function handleKeyDown(e) {
 
     input.value = "";
 }
-
-
 
 async function newGame() {
 

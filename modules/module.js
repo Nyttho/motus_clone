@@ -1,5 +1,5 @@
 export function removeAccent(str) {
-    return str.replaceAll(/[éêè]/gi, "e").replaceAll(/à/gi, "a").replaceAll("â", "a").replaceAll("ç", "c");
+    return str.replaceAll(/[éêè]/gi, "e").replaceAll("à", "a").replaceAll("â", "a").replaceAll("ç", "c").replaceAll("ô", "o").replaceAll("û", "u");
 
 }
 
