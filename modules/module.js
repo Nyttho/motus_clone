@@ -1,11 +1,7 @@
 export function removeAccent(str) {
-    return str.replaceAll(/[éêè]/gi, "e").replaceAll(/à/gi, "a").replaceAll("â", "a");
+    return str.replaceAll(/[éêè]/gi, "e").replaceAll(/à/gi, "a").replaceAll("â", "a").replaceAll("ç", "c");
 
 }
-
-export function getRandomWord(list) {
-    return list[Math.floor(Math.random() * list.length)];
-};
 
 export function generateGrid(word) {
     const grid = document.querySelector(".grid");
@@ -80,3 +76,32 @@ export function checkWin(word, userWord) {
     }
     return gameOver;
 }
+
+export // Fonction pour effectuer la recherche sur le site Larousse
+    async function searchWordOnLarousse(word) {
+    // URL de recherche sur Larousse
+    const url = `https://www.larousse.fr/dictionnaires/francais/${word}`;
+
+    try {
+        // Effectuer une requête HTTP GET
+        const response = await fetch(url);
+
+        // Vérifier si la réponse est réussie (statut 200)
+        if (response.ok) {
+            // Analyser le contenu HTML de la page
+            const html = await response.text();
+
+            // Vérifier si le mot existe dans la réponse HTML
+            if (html.includes("Définitions")) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            throw new Error('Erreur lors de la requête HTTP vers Larousse.');
+        }
+    } catch (error) {
+        return `Une erreur s'est produite : ${error.message}`;
+    }
+}
+

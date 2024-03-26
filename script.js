@@ -1,109 +1,4 @@
-import { removeAccent, getRandomWord, compareWords, generateGrid, showHint, updateRow, checkWin } from "./modules/module.js";
-
-const wordList = [
-    "bureau",
-    "ballon",
-    "chanson",
-    "voiture",
-    "citron",
-    "montage",
-    "ananas",
-    "stylo",
-    "machine",
-    "oiseau",
-    "bateau",
-    "papier",
-    "poisson",
-    "livre",
-    "banane",
-    "chambre",
-    "ordinateur",
-    "nuage",
-    "jouet",
-    "lunette",
-    "girafe",
-    "crayon",
-    "clavier",
-    "magasin",
-    "cheval",
-    "tortue",
-    "sourire",
-    "vampire",
-    "biscuit",
-    "bagage",
-    "jardin",
-    "bracelet",
-    "chapeau",
-    "école",
-    "téléphone",
-    "orange",
-    "canard",
-    "chien",
-    "écharpe",
-    "football",
-    "maison",
-    "guitare",
-    "escalier",
-    "soleil",
-    "plante",
-    "fleur",
-    "montre",
-    "tableau",
-    "journal",
-    "alligator",
-    "chocolat",
-    "sandwich",
-    "abeille",
-    "ciseaux",
-    "cerveau",
-    "pomme",
-    "fraise",
-    "gâteau",
-    "marteau",
-    "mouton",
-    "perroquet",
-    "crocodile",
-    "hibou",
-    "piano",
-    "voiture",
-    "avion",
-    "navire",
-    "étagère",
-    "fenêtre",
-    "cuisine",
-    "coccinelle",
-    "escalator",
-    "girouette",
-    "ordinateur",
-    "ventilateur",
-    "parachute",
-    "radiateur",
-    "stylo",
-    "crocodile",
-    "éléphant",
-    "hibou",
-    "grenouille",
-    "cheval",
-    "panier",
-    "bateau",
-    "bagage",
-    "avion",
-    "télévision",
-    "lumière",
-    "vampire",
-    "papier",
-    "ordinateur",
-    "sandwich",
-    "marteau",
-    "piano",
-    "alligator",
-    "pomme",
-    "cerveau"
-];
-
-
-
-
+import { removeAccent, generateGrid, showHint, updateRow, checkWin, searchWordOnLarousse } from "./modules/module.js";
 
 let gameOver = false;
 const input = document.querySelector(".user-answer");
@@ -111,7 +6,8 @@ const nextWordBtn = document.querySelector(".next-word");
 const result = document.querySelector(".result");
 const scoreDisplay = document.querySelector(".score");
 const numberOfGameDisplay = document.querySelector(".nb-of-game");
-const wordLength = document.querySelector(".word-length")
+const wordLength = document.querySelector(".word-length");
+const errorMsg = document.querySelector(".error-msg")
 let rowNb = 0;
 let wordAlreadyUsed = [];
 let score = 0;
@@ -121,35 +17,65 @@ let wordToFind = "";
 
 let hint;
 
-function handleKeyDown(e) {
-    const userAnswer = input.value;
-    if (e.key === "Enter") {
-        if (!gameOver) {
-            if (rowNb < 5) {
-                if (userAnswer.length === wordToFind.length) {
-                    updateRow(wordToFind, rowNb, userAnswer, hint);
-                    rowNb++;
-                    // Vérifie si le joueur a gagné après avoir mis à jour la ligne
-                    gameOver = checkWin(wordToFind, userAnswer);
-                    if (gameOver) {
-                        endGame();
-                        return; // Arrête la fonction ici pour ne pas exécuter les actions suivantes
-                    }
-                    showHint(wordToFind, rowNb, hint);
-                } else {
-                    rowNb++;
-                    showHint(wordToFind, rowNb, hint);
-                }
-                input.value = "";
-            } else {
-                gameOver = true;
-                endGame();
-            }
+async function fetchWord(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
+        const words = await response.json();
+        const word = words[0].name;
+
+        if (word.length < 8) {
+            return word;
+        } else {
+            return fetchWord(url);
+        }
+    } catch (error) {
+        console.error('Error fetching word:', error);
+        throw error;
     }
 }
 
-function newGame() {
+
+
+
+async function handleKeyDown(e) {
+    errorMsg.textContent = "";
+    const userAnswer = input.value;
+    if (e.key === "Enter") {
+        let UserWordExists = await searchWordOnLarousse(userAnswer);
+        if (UserWordExists) {
+            if (!gameOver) {
+                if (rowNb < 5) {
+                    if (userAnswer.length === wordToFind.length) {
+                        updateRow(wordToFind, rowNb, userAnswer, hint);
+                        rowNb++;
+                        // Vérifie si le joueur a gagné après avoir mis à jour la ligne
+                        gameOver = checkWin(wordToFind, userAnswer);
+                        if (gameOver) {
+                            endGame();
+                            return; // Arrête la fonction ici pour ne pas exécuter les actions suivantes
+                        }
+                        showHint(wordToFind, rowNb, hint);
+                    } else {
+                        rowNb++;
+                        showHint(wordToFind, rowNb, hint);
+                    }
+                    input.value = "";
+                } else {
+                    gameOver = true;
+                    endGame();
+                }
+            }
+        } else {
+            errorMsg.textContent = "Ce mot n'existe pas dans le dictionnaire";
+        }
+
+    }
+}
+
+async function newGame() {
 
     nextWordBtn.style.display = "none";
     result.textContent = "";
@@ -161,8 +87,9 @@ function newGame() {
     nextWordBtn.removeEventListener("click", newGame);
 
     do {
-        wordToFind = removeAccent(getRandomWord(wordList))
+        wordToFind = await fetchWord("https://trouve-mot.fr/api/sizemin/5");
     } while (wordAlreadyUsed.includes(wordToFind));
+    wordToFind = removeAccent(wordToFind);
     wordLength.textContent = wordToFind.length;
     wordAlreadyUsed.push(wordToFind);
     console.log(wordToFind);
@@ -181,7 +108,7 @@ function endGame() {
         score++;
         scoreDisplay.textContent = score;
     } else {
-        result.textContent = "Perdu !";
+        result.textContent = "Perdu ! le mot était : " + wordToFind;
         result.style.color = "red";
     }
     input.removeEventListener("keydown", handleKeyDown);
