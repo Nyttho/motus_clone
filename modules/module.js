@@ -1,6 +1,27 @@
 export function removeAccent(str) {
-    return str.replaceAll(/[éêè]/gi, "e").replaceAll("à", "a").replaceAll("â", "a").replaceAll("ç", "c").replaceAll("ô", "o").replaceAll("û", "u");
+    return str.replace(/[éêèàâçôûï]/gi, function (match) {
+        switch (match) {
+            case 'é':
+            case 'ê':
+            case 'è':
+                return 'e';
+            case 'à':
+            case 'â':
+                return 'a';
+            case 'ç':
+                return 'c';
+            case 'ô':
+                return 'o';
+            case 'û':
+                return 'u';
+            case 'ï':
+                return 'i';
+            default:
+                return match; // Retourne le caractère tel quel si aucun remplacement n'est défini
+        }
+    });
 }
+
 
 export function generateGrid(word) {
     const grid = document.querySelector(".grid");

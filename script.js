@@ -1,21 +1,27 @@
 import { removeAccent, generateGrid, showHint, updateRow, checkWin, searchWordOnLarousse } from "./modules/module.js";
 
-let gameOver = false;
+//-----------dom-------------------
 const input = document.querySelector(".user-answer");
 const nextWordBtn = document.querySelector(".next-word");
 const result = document.querySelector(".result");
 const scoreDisplay = document.querySelector(".score");
 const numberOfGameDisplay = document.querySelector(".nb-of-game");
 const wordLength = document.querySelector(".word-length");
-const errorMsg = document.querySelector(".error-msg")
+const errorMsg = document.querySelector(".error-msg");
+//-------------game variables----------------
+let gameOver = false;
 let rowNb = 0;
 let wordAlreadyUsed = [];
 let score = 0;
 let numberOfGame = 0;
-
 let wordToFind = "";
-
 let hint;
+//----------timer variables---------------
+let startTime;
+let timerInterval;
+let running = false;
+let totalElapsedTime = 0;
+let numGames = 0;
 
 async function fetchWord(url) {
     try {
@@ -26,7 +32,7 @@ async function fetchWord(url) {
         const words = await response.json();
         const word = words[0].name;
 
-        if (word.length < 8) {
+        if (word.length <= 8) {
             return word;
         } else {
             return fetchWord(url);
@@ -39,7 +45,7 @@ async function fetchWord(url) {
 
 async function handleKeyDown(e) {
     errorMsg.textContent = "";
-    const userAnswer = input.value;
+    const userAnswer = removeAccent(input.value).trim();
 
     if (e.key !== "Enter") return;
 
@@ -77,7 +83,7 @@ async function handleKeyDown(e) {
 }
 
 async function newGame() {
-
+    startTimer();
     nextWordBtn.style.display = "none";
     result.textContent = "";
     gameOver = false;
@@ -102,6 +108,7 @@ async function newGame() {
 }
 
 function endGame() {
+    stopTimer();
     input.value = "";
     if (hint.join("").toLowerCase() === wordToFind) {
         result.textContent = "Gagné !";
@@ -115,6 +122,40 @@ function endGame() {
     input.removeEventListener("keydown", handleKeyDown);
     nextWordBtn.style.display = "inline-block";
     nextWordBtn.addEventListener("click", newGame);
+}
+
+function startTimer() {
+    if (!running) {
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000); // Met à jour le chronomètre toutes les secondes
+        running = true;
+    }
+}
+
+function stopTimer() {
+    if (running) {
+        clearInterval(timerInterval);
+        const elapsedTime = Date.now() - startTime;
+        totalElapsedTime += elapsedTime;
+        numGames++;
+        const averageTime = totalElapsedTime / numGames;
+        const averageMinutes = Math.floor(averageTime / 60000);
+        const averageSeconds = Math.floor((averageTime % 60000) / 1000);
+        document.getElementById("average-time").innerText = `${padWithZero(averageMinutes)}:${padWithZero(averageSeconds)}`;
+        running = false;
+    }
+}
+
+function updateTimer() {
+    const elapsedTime = Date.now() - startTime;
+    const minutes = Math.floor(elapsedTime / 60000);
+    const seconds = Math.floor((elapsedTime % 60000) / 1000);
+    const formattedTime = `${padWithZero(minutes)}:${padWithZero(seconds)}`;
+    document.getElementById('timer').innerText = formattedTime;
+}
+
+function padWithZero(number) {
+    return number < 10 ? '0' + number : number;
 }
 
 newGame();

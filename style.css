@@ -89,9 +89,17 @@ span {
   z-index: 99;
 }
 
+.time-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem;
+  margin: 5px 0;
+  font-size: 1.2rem;
+}
+
 .user-answer {
-  margin: 20px 0;
-  padding: 20px 12px;
+  margin: 10px 0;
+  padding: 15px 12px;
   font-size: 1.5rem;
 }
 
@@ -99,7 +107,7 @@ span {
   text-align: center;
   font-size: clamp(1rem, 6vw, 3rem);
   font-weight: 600;
-  margin: 50px 0;
+  margin: 20px 0;
 }
 
 .next-word {
