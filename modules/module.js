@@ -1,6 +1,5 @@
 export function removeAccent(str) {
     return str.replaceAll(/[éêè]/gi, "e").replaceAll("à", "a").replaceAll("â", "a").replaceAll("ç", "c").replaceAll("ô", "o").replaceAll("û", "u");
-
 }
 
 export function generateGrid(word) {
@@ -56,17 +55,41 @@ export function compareWords(wordToFind, row, hint) {
     const rows = document.querySelectorAll(".row");
     const span = rows[row].querySelectorAll("span");
 
+    const wordToFindOccurrences = {}; // Objets pour compter les occurrences dans le mot mystère
+    const wordOccurrences = {}; // Objets pour compter les occurrences dans le mot utilisateur
+
+    // Compter les occurrences dans le mot mystère
+    for (const letter of wordToFind) {
+        wordToFindOccurrences[letter] = (wordToFindOccurrences[letter] || 0) + 1;
+    }
+
+    // Compter les occurrences dans le mot utilisateur et vérifier les lettres à la bonne place
     for (let i = 0; i < wordToFind.length; i++) {
-        if (wordToFind.includes(span[i].textContent)) {
-            if (wordToFind[i] === span[i].textContent) {
-                span[i].parentNode.classList.add("good-place");
-                hint[i] = wordToFind[i]
-            } else {
+        const letter = span[i].textContent;
+        if (letter === wordToFind[i]) {
+            span[i].parentNode.classList.add("good-place");
+            hint[i] = letter;
+            // Décrémenter les occurrences pour éviter de les compter deux fois
+            wordToFindOccurrences[letter]--;
+            wordOccurrences[letter] = (wordOccurrences[letter] || 0) + 1;
+        }
+    }
+
+    // Vérifier les lettres restantes dans le mot utilisateur
+    for (let i = 0; i < wordToFind.length; i++) {
+        const letter = span[i].textContent;
+        if (letter !== wordToFind[i] && wordToFind.includes(letter)) {
+            if (wordToFindOccurrences[letter] > 0) {
                 span[i].parentNode.classList.add("wrong-place");
+                // Décrémenter les occurrences pour éviter de les compter deux fois
+                wordToFindOccurrences[letter]--;
+                wordOccurrences[letter] = (wordOccurrences[letter] || 0) + 1;
             }
         }
     }
 }
+
+
 
 export function checkWin(word, userWord) {
     const result = document.querySelector(".result");
@@ -77,13 +100,12 @@ export function checkWin(word, userWord) {
     return gameOver;
 }
 
-export // Fonction pour effectuer la recherche sur le site Larousse
-    async function searchWordOnLarousse(word) {
+// Fonction pour effectuer la recherche sur le site Larousse
+export async function searchWordOnLarousse(word) {
     // URL de recherche sur Larousse
     const url = `https://www.larousse.fr/dictionnaires/francais/${word}`;
 
     try {
-        // Effectuer une requête HTTP GET
         const response = await fetch(url);
 
         // Vérifier si la réponse est réussie (statut 200)
