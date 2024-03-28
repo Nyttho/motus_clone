@@ -16,13 +16,20 @@ let score = 0;
 let numberOfGame = 0;
 let wordToFind = "";
 let hint;
+let win;
+let points = 0;
+let bestPoints = localStorage.getItem("bestPoints") !== null ? parseInt(localStorage.getItem("bestPoints")) : 0;
+const wordPts = 100;
+const rowPenalty = 10;
+let bonusCoefficient = 100;
+const wordMinLenght = 5;
+const wordMaxLength = 8;
+
 //----------timer variables---------------
 let startTime;
 let timerInterval;
 let running = false;
 let totalElapsedTime = 0;
-let numGames = 0;
-
 async function fetchWord(url) {
     try {
         const response = await fetch(url);
@@ -32,7 +39,7 @@ async function fetchWord(url) {
         const words = await response.json();
         const word = words[0].name;
 
-        if (word.length <= 8) {
+        if (word.length <= wordMaxLength) {
             return word;
         } else {
             return fetchWord(url);
@@ -94,7 +101,7 @@ async function newGame() {
     nextWordBtn.removeEventListener("click", newGame);
 
     do {
-        wordToFind = await fetchWord("https://trouve-mot.fr/api/sizemin/5");
+        wordToFind = await fetchWord(`https://trouve-mot.fr/api/sizemin/${wordMinLenght}`);
     } while (wordAlreadyUsed.includes(wordToFind));
     wordToFind = removeAccent(wordToFind);
     wordLength.textContent = wordToFind.length;
@@ -115,10 +122,13 @@ function endGame() {
         result.style.color = "green";
         score++;
         scoreDisplay.textContent = score;
+        win = true;
     } else {
         result.textContent = "Perdu ! le mot était : " + wordToFind;
         result.style.color = "red";
+        win = false;
     }
+    countPoints(win);
     input.removeEventListener("keydown", handleKeyDown);
     nextWordBtn.style.display = "inline-block";
     nextWordBtn.addEventListener("click", newGame);
@@ -137,8 +147,7 @@ function stopTimer() {
         clearInterval(timerInterval);
         const elapsedTime = Date.now() - startTime;
         totalElapsedTime += elapsedTime;
-        numGames++;
-        const averageTime = totalElapsedTime / numGames;
+        const averageTime = totalElapsedTime / numberOfGame;
         const averageMinutes = Math.floor(averageTime / 60000);
         const averageSeconds = Math.floor((averageTime % 60000) / 1000);
         document.getElementById("average-time").innerText = `${padWithZero(averageMinutes)}:${padWithZero(averageSeconds)}`;
@@ -152,24 +161,37 @@ function updateTimer() {
     const seconds = Math.floor((elapsedTime % 60000) / 1000);
     const formattedTime = `${padWithZero(minutes)}:${padWithZero(seconds)}`;
     document.getElementById('timer').innerText = formattedTime;
+    return elapsedTime;
 }
 
 function padWithZero(number) {
     return number < 10 ? '0' + number : number;
 }
 
+function countPoints(win) {
+    const time = Math.floor(updateTimer() / 1000);
+    console.log(win);
+    if (win) {
+        bonusCoefficient = time <= 30 ? 100 :
+            time <= 60 ? 75 :
+                time <= 90 ? 50 :
+                    time <= 120 ? 25 : 0;
+        points += (wordPts - rowPenalty * (rowNb - 1)) * (1 + bonusCoefficient / 100);
+    }
+    if (points > bestPoints) {
+        bestPoints = points;
+        localStorage.setItem("bestPoints", bestPoints);
+    }
+    updatePoints();
+}
+
+function updatePoints() {
+    const pointsDisplay = document.querySelector(".curent-points");
+    const maxPointsDisplay = document.querySelector(".best-points");
+    pointsDisplay.textContent = points;
+    //ajouter dans localstorage les points max 
+    maxPointsDisplay.textContent = bestPoints;
+}
+
 newGame();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+updatePoints();

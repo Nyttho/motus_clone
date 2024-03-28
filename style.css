@@ -24,10 +24,21 @@ body {
 
 .hud {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   text-align: center;
+  gap: 10px;
   padding: 1rem;
   font-size: clamp(1rem, 3vw, 1.5rem);
+}
+
+.points-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.infos-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 .grid {
