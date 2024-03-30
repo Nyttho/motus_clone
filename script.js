@@ -20,10 +20,11 @@ let win;
 let points = 0;
 let bestPoints = localStorage.getItem("bestPoints") !== null ? parseInt(localStorage.getItem("bestPoints")) : 0;
 const wordPts = 100;
-const rowPenalty = 10;
+const penaltyPoints = 10;
 let bonusCoefficient = 100;
 const wordMinLenght = 5;
 const wordMaxLength = 8;
+
 
 //----------timer variables---------------
 let startTime;
@@ -169,14 +170,14 @@ function padWithZero(number) {
 }
 
 function countPoints(win) {
+    let penaltyAmount = rowNb === 5 ? rowNb : rowNb - 1;
     const time = Math.floor(updateTimer() / 1000);
-    console.log(win);
     if (win) {
         bonusCoefficient = time <= 30 ? 100 :
             time <= 60 ? 75 :
                 time <= 90 ? 50 :
                     time <= 120 ? 25 : 0;
-        points += (wordPts - rowPenalty * (rowNb - 1)) * (1 + bonusCoefficient / 100);
+        points += (wordPts - penaltyPoints * penaltyAmount) * (1 + bonusCoefficient / 100);
     }
     if (points > bestPoints) {
         bestPoints = points;
@@ -189,7 +190,6 @@ function updatePoints() {
     const pointsDisplay = document.querySelector(".curent-points");
     const maxPointsDisplay = document.querySelector(".best-points");
     pointsDisplay.textContent = points;
-    //ajouter dans localstorage les points max 
     maxPointsDisplay.textContent = bestPoints;
 }
 
