@@ -56,38 +56,39 @@ async function handleKeyDown(e) {
     const userAnswer = removeAccent(input.value).trim();
 
     if (e.key !== "Enter") return;
-
-    const userWordExists = await searchWordOnLarousse(userAnswer);
-
-    if (!userWordExists) {
-        input.value = "";
-        errorMsg.textContent = "Ce mot n'existe pas dans le dictionnaire";
-        return;
-    }
-
     if (userAnswer.length !== wordToFind.length) {
-        errorMsg.textContent = "Veuillez taper un mot de " + wordToFind.length + " lettres"
+        errorMsg.textContent = "Veuillez taper un mot de " + wordToFind.length + " lettres";
         return;
-    }
-
-    updateRow(wordToFind, rowNb, userAnswer, hint);
-    if (rowNb < 5) {
-        rowNb++;
     } else {
-        gameOver = true;
-        endGame();
-        return;
+        const userWordExists = await searchWordOnLarousse(userAnswer);
+
+        if (!userWordExists) {
+            input.value = "";
+            errorMsg.textContent = "Ce mot n'existe pas dans le dictionnaire";
+            return;
+        }
+
+        updateRow(wordToFind, rowNb, userAnswer, hint);
+        if (rowNb < 5) {
+            rowNb++;
+        } else {
+            gameOver = true;
+            endGame();
+            return;
+        }
+
+        gameOver = checkWin(wordToFind, userAnswer);
+        if (gameOver) {
+            endGame();
+            return;
+        }
+
+        showHint(wordToFind, rowNb, hint);
+
+        input.value = "";
     }
 
-    gameOver = checkWin(wordToFind, userAnswer);
-    if (gameOver) {
-        endGame();
-        return;
-    }
 
-    showHint(wordToFind, rowNb, hint);
-
-    input.value = "";
 }
 
 async function newGame() {
